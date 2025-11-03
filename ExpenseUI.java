@@ -1,4 +1,3 @@
-// ExpenseTrackerUI.java
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
@@ -20,7 +19,7 @@ public class ExpenseTrackerUI extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Top panel: title
+        // Top panel
         JPanel top = new JPanel(new BorderLayout());
         top.setBackground(new Color(30, 144, 255));
         top.setBorder(new EmptyBorder(12,12,12,12));
@@ -28,32 +27,29 @@ public class ExpenseTrackerUI extends JFrame {
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.setForeground(Color.white);
         top.add(title, BorderLayout.WEST);
-
         JLabel subtitle = new JLabel("Plan • Track • Save");
         subtitle.setFont(new Font("SansSerif", Font.PLAIN, 14));
         subtitle.setForeground(new Color(230,230,250));
         top.add(subtitle, BorderLayout.EAST);
-
         add(top, BorderLayout.NORTH);
 
-        // Main center panel with input cards
+        // Center panel
         JPanel center = new JPanel(new GridBagLayout());
         center.setBorder(new EmptyBorder(16, 16, 16, 16));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.BOTH;
 
-        // Salary & month card
+        // Salary Card
         JPanel salaryCard = createCardPanel("Income", 2);
         monthField = new JTextField();
         salaryField = new JTextField();
         addLabeledField(salaryCard, "Month (e.g., Oct-2025)", monthField);
         addLabeledField(salaryCard, "Monthly Salary (₹)", salaryField);
-
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 1; gbc.weightx = 0.5;
         center.add(salaryCard, gbc);
 
-        // Fixed expenses card
+        // Fixed Expenses
         JPanel fixedCard = createCardPanel("Fixed Expenses", 3);
         electricityField = new JTextField("0");
         waterField = new JTextField("0");
@@ -61,11 +57,10 @@ public class ExpenseTrackerUI extends JFrame {
         addLabeledField(fixedCard, "Electricity (₹)", electricityField);
         addLabeledField(fixedCard, "Water (₹)", waterField);
         addLabeledField(fixedCard, "Gas Cylinder (₹)", gasField);
-
         gbc.gridx = 1; gbc.gridy = 0; gbc.weightx = 0.5;
         center.add(fixedCard, gbc);
 
-        // Variable expenses card
+        // Variable Expenses
         JPanel varCard = createCardPanel("Variable Expenses", 3);
         foodField = new JTextField("0");
         travelField = new JTextField("0");
@@ -75,13 +70,12 @@ public class ExpenseTrackerUI extends JFrame {
         addLabeledField(varCard, "Travel (₹)", travelField);
         addLabeledField(varCard, "Shopping (₹)", shoppingField);
         addLabeledField(varCard, "Miscellaneous (₹)", miscField);
-
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2; gbc.weighty = 1.0;
         center.add(varCard, gbc);
 
         add(center, BorderLayout.CENTER);
 
-        // Bottom Panel with action buttons and message
+        // Bottom panel
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setBorder(new EmptyBorder(12,12,12,12));
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 6));
@@ -93,7 +87,6 @@ public class ExpenseTrackerUI extends JFrame {
         buttons.add(addBtn);
         buttons.add(viewBtn);
         buttons.add(exitBtn);
-
         bottom.add(buttons, BorderLayout.NORTH);
 
         messageLabel = new JLabel(" ");
@@ -108,10 +101,10 @@ public class ExpenseTrackerUI extends JFrame {
         viewBtn.addActionListener(e -> showSummaryDialog());
         exitBtn.addActionListener(e -> System.exit(0));
 
-        // Set a pleasant look and feel fallback on platforms
+        // Look and Feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) { /* ignore */ }
+        } catch (Exception ignored) {}
 
         setVisible(true);
     }
@@ -135,7 +128,7 @@ public class ExpenseTrackerUI extends JFrame {
         gbc.insets = new Insets(6,6,6,6);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0;
-        gbc.gridy = parent.getComponentCount(); // rough place
+        gbc.gridy = parent.getComponentCount();
         JLabel label = new JLabel(labelText);
         label.setFont(new Font("SansSerif", Font.PLAIN, 13));
         gbc.weightx = 0.4;
@@ -153,7 +146,6 @@ public class ExpenseTrackerUI extends JFrame {
         b.setBorder(new LineBorder(new Color(120,120,200), 1, true));
         b.setPreferredSize(new Dimension(150, 36));
         b.setFont(new Font("SansSerif", Font.BOLD, 13));
-        // hover effect
         b.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) { b.setCursor(new Cursor(Cursor.HAND_CURSOR)); }
             public void mouseExited(java.awt.event.MouseEvent evt) { b.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); }
@@ -161,7 +153,7 @@ public class ExpenseTrackerUI extends JFrame {
         return b;
     }
 
-    // Validate & insert logic
+    // --- Expense Logic ---
     private void onAddExpenses() {
         try {
             String month = monthField.getText().trim();
@@ -169,6 +161,7 @@ public class ExpenseTrackerUI extends JFrame {
                 showMessage("Please enter month (e.g., Oct-2025).", Color.RED);
                 return;
             }
+
             double salary = parseDouble(salaryField.getText(), "Salary");
             double electricity = parseDouble(electricityField.getText(), "Electricity");
             double water = parseDouble(waterField.getText(), "Water");
@@ -180,17 +173,13 @@ public class ExpenseTrackerUI extends JFrame {
 
             Expense expense = new Expense(month, salary, electricity, water, gas, food, travel, shopping, misc);
 
-            // Insert into DB
             saveExpenseToDB(expense);
 
-            // Show message according to rules:
             if (expense.total > salary * 0.9) {
-                showMessage("⚠️ This month you overspent! Total: ₹" + String.format("%.2f", expense.total), new Color(185, 50, 50));
+                showMessage("⚠️ Overspent! Total: ₹" + String.format("%.2f", expense.total), new Color(185, 50, 50));
             } else {
-                showMessage("🎉 Savings made this month! Total: ₹" + String.format("%.2f", expense.total), new Color(20,120,60));
+                showMessage("🎉 Savings made! Total: ₹" + String.format("%.2f", expense.total), new Color(20,120,60));
             }
-        } catch (NumberFormatException ex) {
-            // parseDouble already shows message; ignore
         } catch (Exception ex) {
             ex.printStackTrace();
             showMessage("Error: " + ex.getMessage(), Color.RED);
@@ -211,13 +200,11 @@ public class ExpenseTrackerUI extends JFrame {
     private void showMessage(String msg, Color color) {
         messageLabel.setText(msg);
         messageLabel.setForeground(color);
-        // also show a pop-up for clarity
         JOptionPane.showMessageDialog(this, msg);
     }
 
     private void saveExpenseToDB(Expense e) {
-        String sql = "INSERT INTO expenses (month, salary, electricity_bill, water_bill, gas_cylinder, food, travel, shopping, miscellaneous, total_expense, remarks) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO expenses (month, salary, electricity_bill, water_bill, gas_cylinder, food, travel, shopping, miscellaneous, total_expense, remarks) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setString(1, e.month);
@@ -238,7 +225,6 @@ public class ExpenseTrackerUI extends JFrame {
         }
     }
 
-    // Simple view summary in JTable
     private void showSummaryDialog() {
         JDialog dialog = new JDialog(this, "Expense Summary", true);
         dialog.setSize(900, 400);
@@ -292,5 +278,25 @@ public class ExpenseTrackerUI extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ExpenseTrackerUI());
+    }
+}
+
+// Helper class
+class Expense {
+    String month, remarks;
+    double salary, electricity, water, gas, food, travel, shopping, miscellaneous, total;
+
+    public Expense(String month, double salary, double electricity, double water, double gas, double food, double travel, double shopping, double misc) {
+        this.month = month;
+        this.salary = salary;
+        this.electricity = electricity;
+        this.water = water;
+        this.gas = gas;
+        this.food = food;
+        this.travel = travel;
+        this.shopping = shopping;
+        this.miscellaneous = misc;
+        this.total = electricity + water + gas + food + travel + shopping + misc;
+        this.remarks = (total > salary * 0.9) ? "Overspent" : "Saved Well";
     }
 }
